@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildBody, highlightMaterial, selectedMaterial, boneMaterial } from './bodyBuilder.js';
 import { MUSCLE_GROUPS } from './muscleData.js';
+import { getMuscleEducation } from './muscleEducation.js';
 
 // ───────────── Highlight Colors ─────────────
 // 8 preset colors for user-assigned part highlighting
@@ -292,6 +293,7 @@ const infoPanel = document.getElementById('info-panel');
 const infoName = document.getElementById('info-name');
 const infoType = document.getElementById('info-type');
 const infoDetails = document.getElementById('info-details');
+const infoEducation = document.getElementById('info-education');
 const infoClose = document.getElementById('info-close');
 
 infoClose.addEventListener('click', () => {
@@ -315,7 +317,7 @@ function showInfoPanel(userData) {
     html += `<p><strong>Group:</strong> ${MUSCLE_GROUPS[data.group]?.label || data.group}</p>`;
     html += `<p><strong>Origin:</strong> ${info.origin}</p>`;
     html += `<p><strong>Insertion:</strong> ${info.insertion}</p>`;
-    html += `<p><strong>Action:</strong> ${info.action}</p>`;
+    html += `<p><strong>Function:</strong> ${info.action}</p>`;
     if (info.innervation) {
       html += `<p><strong>Innervation:</strong> ${info.innervation}</p>`;
     }
@@ -330,6 +332,7 @@ function showInfoPanel(userData) {
   }
 
   infoDetails.innerHTML = html;
+  renderEducationGuide(data.rawName);
 
   // Build external reference links
   const infoLinks = document.getElementById('info-links');
@@ -357,6 +360,118 @@ function showInfoPanel(userData) {
 
   // Update color picker swatch active states
   updateColorSwatchStates();
+}
+
+function renderEducationGuide(meshName) {
+  const guide = getMuscleEducation(meshName);
+  infoEducation.replaceChildren();
+  infoEducation.hidden = !guide;
+  if (!guide) return;
+
+  const intro = document.createElement('p');
+  intro.className = 'education-intro';
+  intro.textContent = guide.scopeNote;
+  infoEducation.appendChild(intro);
+
+  const functionSection = createEducationSection('Function');
+  const functionText = document.createElement('p');
+  functionText.textContent = guide.function;
+  functionSection.appendChild(functionText);
+
+  const subdivisionSection = createEducationSection('Anatomical subdivisions');
+  const subdivisionList = document.createElement('div');
+  subdivisionList.className = 'education-card-list';
+  for (const subdivision of guide.subdivisions) {
+    const card = document.createElement('article');
+    card.className = 'education-card';
+
+    const heading = document.createElement('h4');
+    heading.textContent = subdivision.name;
+    card.appendChild(heading);
+    card.appendChild(createLabeledParagraph('Attachments', subdivision.attachments));
+    card.appendChild(createLabeledParagraph('Role', subdivision.role));
+    subdivisionList.appendChild(card);
+  }
+  subdivisionSection.appendChild(subdivisionList);
+
+  const exerciseSection = createEducationSection('Exercises');
+  const exerciseList = document.createElement('div');
+  exerciseList.className = 'education-card-list';
+  for (const exercise of guide.exercises) {
+    const card = document.createElement('article');
+    card.className = 'education-card';
+
+    const heading = document.createElement('h4');
+    heading.textContent = exercise.name;
+    card.appendChild(heading);
+    card.appendChild(createLabeledParagraph('Emphasis', exercise.emphasis));
+    card.appendChild(createLabeledParagraph('Technique', exercise.technique));
+    exerciseList.appendChild(card);
+  }
+  exerciseSection.appendChild(exerciseList);
+
+  const hypertrophySection = createEducationSection('Hypertrophy guidance');
+  const guidanceList = document.createElement('ul');
+  guidanceList.className = 'education-guidance-list';
+  for (const recommendation of guide.hypertrophy) {
+    const item = document.createElement('li');
+    item.textContent = recommendation;
+    guidanceList.appendChild(item);
+  }
+  hypertrophySection.appendChild(guidanceList);
+
+  const caveat = document.createElement('p');
+  caveat.className = 'education-caveat';
+  caveat.textContent = guide.caveat;
+  hypertrophySection.appendChild(caveat);
+
+  const referencesSection = createEducationSection('Evidence & references');
+  const referencesList = document.createElement('ul');
+  referencesList.className = 'education-references';
+  for (const reference of guide.references) {
+    const item = document.createElement('li');
+    const link = document.createElement('a');
+    link.href = reference.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = reference.label;
+    item.appendChild(link);
+    if (reference.note) {
+      const note = document.createElement('p');
+      note.textContent = reference.note;
+      item.appendChild(note);
+    }
+    referencesList.appendChild(item);
+  }
+  referencesSection.appendChild(referencesList);
+
+  infoEducation.append(
+    functionSection,
+    subdivisionSection,
+    exerciseSection,
+    hypertrophySection,
+    referencesSection
+  );
+}
+
+function createEducationSection(title) {
+  const section = document.createElement('section');
+  section.className = 'education-section';
+
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+  section.appendChild(heading);
+  return section;
+}
+
+function createLabeledParagraph(label, text) {
+  const paragraph = document.createElement('p');
+  paragraph.className = 'education-detail';
+
+  const labelElement = document.createElement('strong');
+  labelElement.textContent = `${label}: `;
+  paragraph.append(labelElement, document.createTextNode(text));
+  return paragraph;
 }
 
 /**

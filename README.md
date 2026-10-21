@@ -77,6 +77,7 @@ All meshes are decimated to ~4000 faces each for real-time performance. The two 
 │   ├── main.js             # Scene, camera, interaction, UI controls
 │   ├── bodyBuilder.js      # GLB loading, coordinate transforms, materials
 │   ├── muscleData.js       # Muscle groups, classification, anatomy database
+│   ├── muscleEducation.js  # Curated exercise and hypertrophy guide content
 │   └── styles.css          # Dark theme styling
 ├── public/
 │   ├── anatomy.glb         # 467 muscle/tendon meshes (24 MB)
