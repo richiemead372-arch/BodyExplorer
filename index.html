@@ -76,11 +76,12 @@
         </div>
       </div>
 
-      <div id="info-panel" class="hidden">
-        <button id="info-close">&times;</button>
+      <div id="info-panel" class="hidden" role="region" aria-labelledby="info-name">
+        <button id="info-close" aria-label="Close muscle information">&times;</button>
         <h2 id="info-name"></h2>
         <span id="info-type" class="badge"></span>
         <div id="info-details"></div>
+        <div id="info-education" hidden aria-live="polite"></div>
         <div id="info-links"></div>
         <div id="info-color-picker">
           <label>Highlight Color</label>
